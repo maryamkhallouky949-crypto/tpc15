@@ -1,0 +1,172 @@
+
+#include <iostream>
+#include <string>
+using namespace std;
+
+
+class Noeud {
+public:
+    int cle;
+    string valeur;
+    Noeud* suivant;
+
+    Noeud(int c, string v) {
+        cle = c;
+        valeur = v;
+        suivant = nullptr;
+    }
+};
+
+
+class TableHachage {
+private:
+    Noeud** table;
+    int tailleTable;
+
+    int hachage(int cle) const {
+        return ((cle % tailleTable) + tailleTable) % tailleTable;
+    }
+
+public:
+   
+    TableHachage(int taille) {
+        tailleTable = taille;
+        table = new Noeud*[tailleTable];
+
+        for (int i = 0; i < tailleTable; i++) {
+            table[i] = nullptr;
+        }
+    }
+
+    
+    void inserer(int cle, string valeur) {
+        int index = hachage(cle);
+
+        Noeud* courant = table[index];
+
+        
+        while (courant != nullptr) {
+            if (courant->cle == cle) {
+                courant->valeur = valeur;
+                return;
+            }
+
+            courant = courant->suivant;
+        }
+
+        Noeud* nouveau = new Noeud(cle, valeur);
+
+        nouveau->suivant = table[index];
+        table[index] = nouveau;
+    }
+
+   
+    string rechercher(int cle) const {
+        int index = hachage(cle);
+
+        Noeud* courant = table[index];
+
+        while (courant != nullptr) {
+            if (courant->cle == cle) {
+                return courant->valeur;
+            }
+
+            courant = courant->suivant;
+        }
+
+        return "Cle introuvable";
+    }
+
+   
+    void supprimer(int cle) {
+        int index = hachage(cle);
+
+        Noeud* courant = table[index];
+        Noeud* precedent = nullptr;
+
+        while (courant != nullptr) {
+
+            if (courant->cle == cle) {
+
+                if (precedent == nullptr) {
+                    table[index] = courant->suivant;
+                }
+                else {
+                    precedent->suivant = courant->suivant;
+                }
+
+                delete courant;
+
+                cout << "Cle " << cle << " supprimee." << endl;
+                return;
+            }
+
+            precedent = courant;
+            courant = courant->suivant;
+        }
+
+        cout << "Cle introuvable." << endl;
+    }
+
+
+    void afficher() const {
+        for (int i = 0; i < tailleTable; i++) {
+
+            cout << "Case " << i << " : ";
+
+            Noeud* courant = table[i];
+
+            while (courant != nullptr) {
+                cout << "[" << courant->cle
+                     << ", " << courant->valeur << "] -> ";
+
+                courant = courant->suivant;
+            }
+
+            cout << "NULL" << endl;
+        }
+    }
+
+   
+    ~TableHachage() {
+        for (int i = 0; i < tailleTable; i++) {
+
+            Noeud* courant = table[i];
+
+            while (courant != nullptr) {
+                Noeud* temp = courant;
+                courant = courant->suivant;
+                delete temp;
+            }
+        }
+
+        delete[] table;
+    }
+};
+
+int main() {
+
+    TableHachage t(5);
+
+    
+    t.inserer(10, "Ali");
+    t.inserer(12, "Sara");
+    t.inserer(15, "Maryam");
+    t.inserer(7, "Ahmed");
+
+    cout << "Contenu de la table :" << endl;
+    t.afficher();
+
+   
+    cout << "\nRecherche de la cle 15 : ";
+    cout << t.rechercher(15) << endl;
+
+  
+    cout << "Suppression :" << endl;
+    t.supprimer(10);
+
+    cout << "Table apres suppression :" << endl;
+    t.afficher();
+
+    return 0;
+}
